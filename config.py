@@ -14,8 +14,18 @@ MODEL_LOCK = threading.Lock()
 GEMINI_MODEL = None
 
 def api_key():
-    load_dotenv(BASE_DIR / ".env")
-    return os.getenv("GEMINI_API_KEY", "").strip()
+    for env_path in [BASE_DIR / ".env", BASE_DIR / "Napkin2Code" / ".env"]:
+        if env_path.exists():
+            load_dotenv(env_path, override=True)
+            key = os.getenv("GEMINI_API_KEY", "").strip()
+            if key:
+                break
+    key = os.getenv("GEMINI_API_KEY", "").strip()
+    if (key.startswith('"') and key.endswith('"')) or (key.startswith("'") and key.endswith("'")):
+        key = key[1:-1].strip()
+    if key.startswith("AQ.AQ."):
+        key = key[3:]
+    return key
 
 def current_model():
     global GEMINI_MODEL
